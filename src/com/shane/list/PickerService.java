@@ -13,9 +13,17 @@ import java.util.*;
 import javax.activation.*;
 
 import com.sun.mail.smtp.SMTPTransport;
+
+
+
+
+
+
+
 //import java.security.Security;
 import java.util.Date;
 import java.util.Properties;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -26,7 +34,7 @@ import javax.mail.internet.MimeMessage;
 public class PickerService {
 	
 	public ArrayList<Person> populateList(){
-		File file = new File("C:\\shanergulley\\PersonList.txt");
+		File file = new File("C:\\shanergulley\\PersonListTest.txt");
 		ArrayList<Person> personListGiver = new ArrayList<Person>();
 		
 		try {
@@ -40,7 +48,7 @@ public class PickerService {
 					
 				} else if (currentLine.contains("?")) {
 					name = currentLine.replace("?", "");
-				} else if (currentLine.contains(".com")) {
+				} else if (currentLine.contains("@")) {
 					String email = currentLine;
 					Person person = new Person();
 					person.setFamily(currentFamily);
@@ -60,7 +68,7 @@ public class PickerService {
 			e.printStackTrace();
 		}
 		
-		
+//		System.out.print("loaded list");
 		return personListGiver;
 	}
 	
@@ -69,18 +77,49 @@ public class PickerService {
 		ArrayList<Person> personListReciever = new ArrayList<Person>(personListGiver);
 		Collections.shuffle(personListGiver);
 		Collections.shuffle(personListReciever);
+//		System.out.print(personListGiver.get(1).getFamily()+ personListGiver.get(1).getName());
+		int retry = 0;
+		boolean gulleyFamily = false;
+		boolean counceFamily = false;
+		boolean isValid = true;
 		
 	     for(int j=0; j < personListGiver.size(); j++)
 	     {
-	    	 String nameGiver = personListGiver.get(j).getFamily();
-	    	 String nameReceiver = personListReciever.get(j).getFamily();
-	    	 if (nameGiver == nameReceiver)
+	    	 String familyGiver = personListGiver.get(j).getFamily();
+	    	 String familyReceiver = personListReciever.get(j).getFamily();
+	    	 String nameGiver = personListGiver.get(j).getName();
+	    	 String nameReceiver = personListReciever.get(j).getName();
+	    	 if (!familyGiver.equals(familyReceiver))
 	    	 {
-	    		 j=0;
+	    		 if(gulleyFamily)
+	    		 {	 
+	    			 isValid = GulleyExceptions.exceptions(familyGiver, familyReceiver, nameGiver, nameReceiver);
+	    		 }
+	    		 
+	    		 if(counceFamily)
+	    		 {
+	    			 isValid = GulleyExceptions.exceptions(familyGiver, familyReceiver, nameGiver, nameReceiver);
+	    		 }
+	    		 if(!isValid)
+	    		 {
+	    			 isValid = true;
+	    			 retry++;
+	    			 j=-1;
+	    			 Collections.shuffle(personListGiver);
+	    			 Collections.shuffle(personListReciever);	    			 	    				 
+	    		 }
+
+	    	 }else{
+	    		 isValid = true;
+	    		 retry++;
+	    		 j=-1;
 	    		 Collections.shuffle(personListGiver);
 	    		 Collections.shuffle(personListReciever);
 	    	 }
 	     }
+	     
+	     System.out.println("Retry = "+ retry);
+	     
 
 		
 		for(int j=0; j < personListGiver.size(); j++){
@@ -89,17 +128,24 @@ public class PickerService {
 			String recipientEmail = personListGiver.get(j).getEmail();
 			String title = personListGiver.get(j).getName()+" -open to see Secret Santa results!";
 			String message = "Hello "+personListGiver.get(j).getName()+",\n"+
-							 "    Congratulations! You have the honor of bringing joy to "+personListReciever.get(j).getName()+" by giving them a Christmas present!\n"+ 
-					         "The amount for gifts is around $50 this year. \n" +
-							 "You can get ideas on what to get by going to:  under their name.\n"+
-							 "Don't forget to add the gifts you would be interested in so the person who got your name will have an idea on what to get you.\n"+
-							 "Please do not reply back to this email because even shane doesn't know who picked who.\n" +  
-							 "Tell Emily that she rocks!\n"+
+							 "    Congratulations! You have the honor of bringing joy to "+personListReciever.get(j).getName()+"!\n"+ 
+					         "We are doing things a little different this Christmas.  For your person this year, you have the honor of:  \n" +
+							 "1)praying for them on a consistent basis until Christmas\n"+
+							 "2)coming up with a small gift or artwork or scrapbook page that shares a fun memory with that person or something that is encouraging\n"+
+							 "or inspirational for them to use in the new year.\n"+
+							 "Be creative! :)\n" +  
 							 "\n"+
 							 "Thank you\n"+
-							 "Shane the Great";
+							 "Shane the train";
+			//this.Send(username, password, recipientEmail, "", title, message);
+//			Send send = new Send();
+//			send.Send(username, password, recipientEmail, "", title, message);
+			
+//			Send send = new Send();
 			this.Send(username, password, recipientEmail, "", title, message);
-			System.out.print(personListGiver.get(j).getName()+ "="+personListReciever.get(j).getName() + "\n");
+			
+			
+			//System.out.print(personListGiver.get(j).getName()+","+personListGiver.get(j).getFamily() +"="+personListReciever.get(j).getName()+","+personListReciever.get(j).getFamily() + "\n");
 			
 		}
 		
